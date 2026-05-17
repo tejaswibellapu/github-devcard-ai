@@ -1,0 +1,51 @@
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: gitcard-backend
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./backend/.env
+    volumes:
+      # Enable hot-reload by mounting the app directory
+      - ./backend/app:/app/app
+      # Persistent volume for generated cards
+      - gitcard-data:/app/app/static/cards
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+    restart: unless-stopped
+    networks:
+      - gitcard-net
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: gitcard-frontend
+    ports:
+      - "8080:80"
+    environment:
+      # Inject the backend URL for the frontend to use
+      - BACKEND_URL=http://localhost:8000
+    volumes:
+      # Enable hot-reload for frontend assets
+      - ./frontend:/usr/share/nginx/html
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - gitcard-net
+
+networks:
+  gitcard-net:
+    driver: bridge
+
+volumes:
+  gitcard-data:

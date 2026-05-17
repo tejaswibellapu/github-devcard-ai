@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.env
+
+# Static files
+backend/app/static/cards/*.svg
+
+# Docker
+.dockerignore
+
+# OS
+.DS_Store
+Thumbs.db
